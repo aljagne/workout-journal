@@ -1,4 +1,5 @@
-import type { MetaFunction } from "@remix-run/node";
+import { redirect, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
+import { Form } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -6,6 +7,14 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Welcome to Workout Journal" },
   ];
 };
+
+export async function action({request}: ActionFunctionArgs) {
+  console.log(request);
+  let formData = await request.formData();
+  let json = Object.fromEntries(formData.entries());
+  console.log(json);
+  return redirect("/");
+}
 
 export default function Index() {
   return (
@@ -15,7 +24,7 @@ export default function Index() {
         Planing and Workouts, Updated weekly
       </p>
       <div className="my-8 border p-3 ">
-        <form>
+        <Form method="post">
           <p className="italic">Add a new workout or planing</p>
           <div className="mt-4">
             <input type="date" name="date" className="text-gray-700" />
@@ -52,7 +61,7 @@ export default function Index() {
           </div>
           <div className="mt-2">
             <textarea
-              name=""
+              name="text"
               className="w-full text-gray-700"
               placeholder="Write your workout..."
             />
@@ -65,7 +74,7 @@ export default function Index() {
               Save
             </button>
           </div>
-        </form>
+        </Form>
       </div>
 
       <div className="mt-6">
