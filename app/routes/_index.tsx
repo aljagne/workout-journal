@@ -1,5 +1,8 @@
 import { redirect, type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
 import { Form } from "@remix-run/react";
+import { PrismaClient } from "@prisma/client";
+
+
 
 export const meta: MetaFunction = () => {
   return [
@@ -8,11 +11,20 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export async function action({request}: ActionFunctionArgs) {
-  console.log(request);
+export async function action({ request }: ActionFunctionArgs) {
+  let db = new PrismaClient();
+  // console.log(request);
   let formData = await request.formData();
-  let json = Object.fromEntries(formData.entries());
-  console.log(json);
+  let data = Object.fromEntries(formData.entries());
+  console.log(data);
+
+  await db.entry.create({
+    data: {
+      date: new Date("2023-12-07"),
+      type: "workout",
+      text: "some text",
+    },
+  });
   return redirect("/");
 }
 
