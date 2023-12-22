@@ -2,6 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* html {
-  @apply bg-gray-100;
-} */
+html {
+  @apply bg-gray-900 text-gray-200 antialiased;
+}
