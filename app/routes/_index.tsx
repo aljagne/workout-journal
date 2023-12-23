@@ -1,12 +1,16 @@
-import {
-  redirect,
-  type MetaFunction,
-  type ActionFunctionArgs,
-} from "@remix-run/node";
-import { Form, useFetcher } from "@remix-run/react";
+import { type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
+import { useFetcher, useLoaderData } from "@remix-run/react";
 import { PrismaClient } from "@prisma/client";
 import { format } from "date-fns";
-import { useEffect, useRef } from "react";
+import {
+  useEffect,
+  useRef,
+  type JSXElementConstructor,
+  type Key,
+  type ReactElement,
+  type ReactNode,
+  type ReactPortal,
+} from "react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -30,7 +34,7 @@ export async function action({ request }: ActionFunctionArgs) {
     throw new Error("Bad request");
   }
 
-  await db.entry.create({
+  return db.entry.create({
     data: {
       date: new Date(date),
       type: type,
@@ -38,10 +42,17 @@ export async function action({ request }: ActionFunctionArgs) {
     },
   });
 }
+export async function loader() {
+  let db = new PrismaClient();
+  let entries = await db.entry.findMany();
+
+  return entries;
+}
 
 export default function Index() {
   let fetcher = useFetcher();
   let textareaRef = useRef<HTMLTextAreaElement>(null);
+  let entries = useLoaderData<typeof loader>();
 
   useEffect(() => {
     if (fetcher.state === "idle" && textareaRef.current) {
@@ -49,8 +60,6 @@ export default function Index() {
       textareaRef.current.focus();
     }
   }, [fetcher.state]);
-
-  console.log(fetcher.state);
 
   return (
     <div className="p-10">
@@ -129,6 +138,12 @@ export default function Index() {
           </fieldset>
         </fetcher.Form>
       </div>
+
+      {entries.map((entry) => (
+        <p key={entry.id}>
+          {entry.type} ◽ {entry.text}
+        </p>
+      ))}
 
       <div className="mt-6">
         <p className="font-bold">
