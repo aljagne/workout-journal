@@ -5,6 +5,8 @@ import {
 } from "@remix-run/node";
 import { Form, useFetcher } from "@remix-run/react";
 import { PrismaClient } from "@prisma/client";
+import { format } from "date-fns";
+import { useEffect, useRef } from "react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -16,7 +18,7 @@ export const meta: MetaFunction = () => {
 export async function action({ request }: ActionFunctionArgs) {
   let db = new PrismaClient();
 
-  await new Promise(resolve => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   let formData = await request.formData();
   let { date, type, text } = Object.fromEntries(formData);
@@ -35,11 +37,18 @@ export async function action({ request }: ActionFunctionArgs) {
       text: text,
     },
   });
-  return redirect("/");
 }
 
 export default function Index() {
   let fetcher = useFetcher();
+  let textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (fetcher.state === "idle" && textareaRef.current) {
+      textareaRef.current.value = "";
+      textareaRef.current.focus();
+    }
+  }, [fetcher.state]);
 
   console.log(fetcher.state);
 
@@ -53,63 +62,71 @@ export default function Index() {
         <p className="italic">Add a new workout or planing</p>
 
         <fetcher.Form method="post" className="mt-2">
-          <div>
-            <div className="mt-4">
-              <input
-                type="date"
-                name="date"
+          <fieldset
+            className="disabled:opacity-70"
+            disabled={fetcher.state === "submitting"}
+          >
+            <div>
+              <div className="mt-4">
+                <input
+                  type="date"
+                  name="date"
+                  required
+                  className="text-gray-900"
+                  defaultValue={format(new Date(), "yyyy-MM-dd")}
+                />
+              </div>
+
+              <div className="mt-2 space-x-6">
+                <label className="inline-block">
+                  <input
+                    required
+                    type="radio"
+                    defaultChecked
+                    className="mr-1"
+                    name="type"
+                    value="workout"
+                  />
+                  Workout
+                </label>
+                <label className="inline-block">
+                  <input
+                    className="mr-1"
+                    type="radio"
+                    name="type"
+                    value="planing"
+                  />
+                  Planing
+                </label>
+                <label className="inline-block">
+                  <input
+                    className="mr-1"
+                    type="radio"
+                    name="type"
+                    value="interesting-things"
+                  />
+                  Interesting things
+                </label>
+              </div>
+            </div>
+            <div className="mt-2">
+              <textarea
+                ref={textareaRef}
+                name="text"
+                className="w-full text-gray-700"
+                placeholder="Write your workout..."
                 required
-                className="text-gray-700"
               />
             </div>
-
-            <div className="mt-2 space-x-6">
-              <label className="inline-block">
-                <input
-                  required
-                  type="radio"
-                  className="mr-1"
-                  name="type"
-                  value="workout"
-                />
-                Workout
-              </label>
-              <label className="inline-block">
-                <input
-                  className="mr-1"
-                  type="radio"
-                  name="type"
-                  value="planing"
-                />
-                Planing
-              </label>
-              <label className="inline-block">
-                <input
-                  className="mr-1"
-                  type="radio"
-                  name="type"
-                  value="interesting-things"
-                />
-                Interesting things
-              </label>
+            <div className="mt-1 text-right">
+              <button
+                className="bg-blue-500 px-4 py-1 font-medium text-white"
+                type="submit"
+              >
+                {fetcher.state === "submitting" ? "Saving..." : "Save"}
+              </button>
             </div>
-          </div>
-          <div className="mt-2">
-            <textarea
-              name="text"
-              className="w-full text-gray-700"
-              placeholder="Write your workout..."
-              required
-            />
-          </div>
-          <div className="mt-1 text-right">
-            <button
-              className="bg-blue-500 px-4 py-1 font-medium text-white"
-              type="submit"
-            >
-              {fetcher.state === "submitting" ? "Saving..." : "Save"}
-            </button>
-          </div>
+          </fieldset>
         </fetcher.Form>
       </div>
 
