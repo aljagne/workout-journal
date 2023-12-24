@@ -1,7 +1,7 @@
 import { type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { PrismaClient } from "@prisma/client";
-import { format, formatISO, parseISO, startOfWeek } from "date-fns";
+import { format, parseISO, startOfWeek } from "date-fns";
 import { useEffect, useRef } from "react";
 
 export const meta: MetaFunction = () => {
