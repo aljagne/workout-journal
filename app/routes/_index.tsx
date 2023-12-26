@@ -1,8 +1,8 @@
 import { type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { PrismaClient } from "@prisma/client";
 import { format, parseISO, startOfWeek } from "date-fns";
-import { useEffect, useRef } from "react";
+import EntryForm from "~/components/entry-form";
 
 export const meta: MetaFunction = () => {
   return [
@@ -14,10 +14,10 @@ export const meta: MetaFunction = () => {
 export async function action({ request }: ActionFunctionArgs) {
   let db = new PrismaClient();
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
   let formData = await request.formData();
   let { date, type, text } = Object.fromEntries(formData);
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   if (
     typeof date !== "string" ||
     typeof type !== "string" ||
@@ -46,8 +46,6 @@ export async function loader() {
 }
 
 export default function Index() {
-  let fetcher = useFetcher();
-  let textareaRef = useRef<HTMLTextAreaElement>(null);
   let entries = useLoaderData<typeof loader>();
 
   let entriesByWeek = entries.reduce<Record<string, typeof entries>>(
@@ -78,85 +76,12 @@ export default function Index() {
       ),
     }));
 
-  useEffect(() => {
-    if (fetcher.state === "idle" && textareaRef.current) {
-      textareaRef.current.value = "";
-      textareaRef.current.focus();
-    }
-  }, [fetcher.state]);
-
   return (
     <div>
       <div className="my-8 border p-3 ">
         <p className="italic">Add a new workout or planing</p>
 
-        <fetcher.Form method="post" className="mt-2">
-          <fieldset
-            className="disabled:opacity-70"
-            disabled={fetcher.state === "submitting"}
-          >
-            <div>
-              <div className="mt-4">
-                <input
-                  type="date"
-                  name="date"
-                  required
-                  className="text-gray-900"
-                  defaultValue={format(new Date(), "yyyy-MM-dd")}
-                />
-              </div>
-
-              <div className="mt-2 space-x-6">
-                <label className="inline-block">
-                  <input
-                    required
-                    type="radio"
-                    defaultChecked
-                    className="mr-1"
-                    name="type"
-                    value="workout"
-                  />
-                  Workout
-                </label>
-                <label className="inline-block">
-                  <input
-                    className="mr-1"
-                    type="radio"
-                    name="type"
-                    value="planing"
-                  />
-                  Planing
-                </label>
-                <label className="inline-block">
-                  <input
-                    className="mr-1"
-                    type="radio"
-                    name="type"
-                    value="interesting-things"
-                  />
-                  Interesting things
-                </label>
-              </div>
-            </div>
-            <div className="mt-2">
-              <textarea
-                ref={textareaRef}
-                name="text"
-                className="w-full text-gray-700"
-                placeholder="Write your workout..."
-                required
-              />
-            </div>
-            <div className="mt-1 text-right">
-              <button
-                className="bg-blue-500 px-4 py-1 font-medium text-white"
-                type="submit"
-              >
-                {fetcher.state === "submitting" ? "Saving..." : "Save"}
-              </button>
-            </div>
-          </fieldset>
-        </fetcher.Form>
+        <EntryForm />
       </div>
 
       <div className="mt-12 space-y-12">
@@ -204,8 +129,11 @@ export default function Index() {
   );
 }
 
-
-function EntryListItem({ entry }: {entry: Awaited<ReturnType<typeof loader>> [number]}) {
+function EntryListItem({
+  entry,
+}: {
+  entry: Awaited<ReturnType<typeof loader>>[number];
+}) {
   return (
     <li className="group">
       {entry.text}

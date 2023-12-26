@@ -1,5 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from "@remix-run/node";
+import {
+  redirect,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import EntryForm from "~/components/entry-form";
 
@@ -20,15 +24,15 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-    if (typeof params.entryId !== "string") {
+  if (typeof params.entryId !== "string") {
     throw new Response("Not found", { status: 404 });
   }
   let db = new PrismaClient();
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
   let formData = await request.formData();
   let { date, type, text } = Object.fromEntries(formData);
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   if (
     typeof date !== "string" ||
     typeof type !== "string" ||
@@ -56,6 +60,7 @@ export default function EditPage() {
   return (
     <div className="mt-4">
       <p>Editing entry {entry.id}</p>
+
       <div className="mt-8">
         <EntryForm entry={entry} />
       </div>
