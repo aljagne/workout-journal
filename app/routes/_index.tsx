@@ -1,8 +1,13 @@
-import { type MetaFunction, type ActionFunctionArgs } from "@remix-run/node";
+import {
+  type MetaFunction,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { PrismaClient } from "@prisma/client";
 import { format, parseISO, startOfWeek } from "date-fns";
 import EntryForm from "~/components/entry-form";
+import { getSession } from "~/session";
 
 export const meta: MetaFunction = () => {
   return [
@@ -35,18 +40,23 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 }
 
-export async function loader() {
+export async function loader({ request }: LoaderFunctionArgs) {
+  let session = await getSession(request.headers.get("cookie"));
+
   let db = new PrismaClient();
   let entries = await db.entry.findMany();
 
-  return entries.map((entry) => ({
-    ...entry,
-    date: entry.date.toISOString().substring(0, 10),
-  }));
+  return {
+    session: session.data,
+    entries: entries.map((entry) => ({
+      ...entry,
+      date: entry.date.toISOString().substring(0, 10),
+    })),
+  };
 }
 
 export default function Index() {
-  let entries = useLoaderData<typeof loader>();
+  let { session, entries } = useLoaderData<typeof loader>();
 
   let entriesByWeek = entries.reduce<Record<string, typeof entries>>(
     (memo, entry) => {
@@ -78,12 +88,13 @@ export default function Index() {
 
   return (
     <div>
-      <div className="my-8 border p-3 ">
-        <p className="italic">Add a new workout or planing</p>
+      {session.isAdmin && (
+        <div className="my-8 border p-3 ">
+          <p className="italic">Add a new workout or planing</p>
 
-        <EntryForm />
-      </div>
-
+          <EntryForm />
+        </div>
+      )}
       <div className="mt-12 space-y-12">
         {weeks.map((week) => (
           <div key={week.dateString}>
@@ -132,11 +143,12 @@ export default function Index() {
 function EntryListItem({
   entry,
 }: {
-  entry: Awaited<ReturnType<typeof loader>>[number];
+  entry: Awaited<ReturnType<typeof loader>>["entries"][number];
 }) {
   return (
     <li className="group">
       {entry.text}
+
       <Link
         to={`/entries/${entry.id}/edit`}
         className="ml-2 text-blue-500 opacity-0 group-hover:opacity-100"
