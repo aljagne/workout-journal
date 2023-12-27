@@ -12,12 +12,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
   if (typeof params.entryId !== "string") {
     throw new Response("Not found", { status: 404 });
   }
+
   let db = new PrismaClient();
   let entry = await db.entry.findUnique({ where: { id: +params.entryId } });
 
   if (!entry) {
     throw new Response("Not found", { status: 404 });
   }
+
   return {
     ...entry,
     date: entry.date.toISOString().substring(0, 10),
@@ -28,6 +30,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (typeof params.entryId !== "string") {
     throw new Response("Not found", { status: 404 });
   }
+
   let db = new PrismaClient();
 
   let formData = await request.formData();
@@ -36,12 +39,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  if (_action === 'delete') {
+  if (_action === "delete") {
     await db.entry.delete({
       where: {
         id: +params.entryId,
       },
     });
+
     return redirect("/");
   } else {
     if (
@@ -51,6 +55,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     ) {
       throw new Error("Bad request");
     }
+
     await db.entry.update({
       where: {
         id: +params.entryId,
@@ -64,7 +69,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     return redirect("/");
   }
-  }
+}
 
 export default function EditPage() {
   let entry = useLoaderData<typeof loader>();
@@ -74,6 +79,7 @@ export default function EditPage() {
       e.preventDefault();
     }
   }
+
   return (
     <div className="mt-4">
       <p>Editing entry {entry.id}</p>
@@ -81,6 +87,7 @@ export default function EditPage() {
       <div className="mt-8">
         <EntryForm entry={entry} />
       </div>
+
       <div className="mt-8">
         <Form method="post" onSubmit={handleSubmit}>
           <button
@@ -88,7 +95,7 @@ export default function EditPage() {
             value="delete"
             className="text-gray-500 underline"
           >
-            Delete this entry....
+            Delete this entry...
           </button>
         </Form>
       </div>

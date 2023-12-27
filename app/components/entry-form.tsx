@@ -16,14 +16,13 @@ export default function EntryForm({
 
   useEffect(() => {
     if (
-      fetcher.data !== "init" &&
       fetcher.state === "idle" &&
       textareaRef.current
     ) {
       textareaRef.current.value = "";
       textareaRef.current.focus();
     }
-  }, [fetcher.state, fetcher.data]);
+  }, [fetcher.state]);
 
   return (
     <fetcher.Form method="post" className="mt-2">
@@ -44,9 +43,9 @@ export default function EntryForm({
 
           <div className="mt-4 space-x-4">
             {[
-              { label: "workout", value: "workout" },
-              { label: "planing", value: "planing" },
-              { label: "interesting things", value: "interesting-things" },
+              { label: "Workout", value: "workout" },
+              { label: "Planing", value: "planing" },
+              { label: "Interesting things", value: "interesting-things" },
             ].map((option) => (
               <label key={option.value} className="inline-block">
                 <input
@@ -65,17 +64,17 @@ export default function EntryForm({
         <div className="mt-4">
           <textarea
             ref={textareaRef}
+            placeholder="Type your entry..."
             name="text"
             className="w-full text-gray-700"
-            placeholder="Write your workout..."
             required
             defaultValue={entry?.text}
           />
         </div>
-        <div className="mt-1 text-right">
+        <div className="mt-2 text-right">
           <button
-            className="bg-blue-500 px-4 py-1 font-medium text-white"
             type="submit"
+            className="bg-blue-500 px-4 py-1 font-semibold text-white"
           >
             {fetcher.state !== "idle" ? "Saving..." : "Save"}
           </button>
